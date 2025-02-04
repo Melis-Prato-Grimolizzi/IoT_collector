@@ -38,7 +38,7 @@ class Collector:
         timestamp = time.time()
         try:
             while True:
-                if time.time() - timestamp >= 3600:
+                if time.time() - timestamp >= 600:
                     timestamp = time.time()
                     print("Aridaje!")
                     self.updateParkingHistory()

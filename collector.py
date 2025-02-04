@@ -2,45 +2,48 @@ import configparser
 import time
 import SessionHTTP as Http
 import account as Account
+import pandas as pd
 
 
 class Collector:
     def __init__(self, bearer):
         self.bearer = bearer
         self.config = configparser.ConfigParser()
+        self.config.read('config.ini')
+        self.base_url = self.config.get('Urls', 'BaseUrl')
+        self.data = pd.read_csv('data/time_series.csv')
+        self.index = 0
 
-    def getAllState(self):
-        url = self.config['Urls']['GetUrl']
+    def updateParkingHistory(self):
+        url_trigger = self.config.get('Urls', 'UpdateParkingHistory')
+        url_trigger = self.base_url + url_trigger
+        update_state = self.config.get('Urls', 'UpdateSlot')
+        url_update_state = self.base_url + update_state
         session = Http.getDaemonSession()
         header = {
             'Authorization': self.bearer
         }
-        response = session.get(url, headers=header)
-        # TODO: handle response and trasnform it
-        return response.json().to_dict()
+        for i in range(3, 200):
+            state = self.data[self.data['id'] == i]['y'].values[self.index]
+            response = session.post(url_update_state, headers=header, data={'parking_id': i+1, 'state': state})
+            print("DEBUG: Response for server (Update State Manual): ", response.text)
 
-    def sendHistory(self, data):
-        url = self.config['Urls']['PostUrl']
-        session = Http.getDaemonSession()
-        header = {
-            'Authorization': self.bearer
-        }
-        response = session.post(url, headers=header, data=data)
-        return response.json().to_dict()
+        response = session.post(url_trigger, headers=header)
+        print("DEBUG: Response for server (Update Parking History): ", response.text)
+        self.index += 1
+        if self.index >= (len(self.data[self.data['id'] == 1]) - 1):
+            self.index = 0
 
     def loop(self):
         timestamp = time.time()
         while True:
-            if time.time() - timestamp >= 600:
+            if time.time() - timestamp >= 3600:
                 timestamp = time.time()
-                print("Daje roma!")
-                # data = self.getData()
-                # self.sendData(data)
+                print("Aridaje!")
+                self.updateParkingHistory()
 
 
 if __name__ == '__main__':
-    if not Account.userExist():
-        Account.createCollector()
     bearer = Account.collectorLogin()
 
     collector = Collector(bearer)

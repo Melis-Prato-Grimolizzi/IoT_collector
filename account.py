@@ -2,41 +2,35 @@ import SessionHTTP as Http
 import configparser
 
 config = configparser.ConfigParser()
-
-
-def userExist():
-    session = Http.getSession()
-    check_user_url = config['Urls']['CheckCollector']
-    response = session.get(check_user_url)
-    print(f"DEBUG: Response for server (Get user): {response.text}")
-    if response.status_code == 200:
-        return True
-    return False
-
+config.read('config.ini')
 
 def createCollector():
     session = Http.getSession()
-    create_collector_url = config['Urls']['CreateCollector']
-    username = config['User']['username']
-    password = config['User']['password']
+    base = config.get('Urls', 'BaseUrl')
+    create_collector_url = config.get('Urls', 'CreateCollector')
+    url = base + create_collector_url
+    username = config.get('Account', 'username')
+    password = config.get('Account', 'password')
     body = {
         'username': username,
         'password': password
     }
-    response = session.post(create_collector_url, data=body)
+    response = session.post(url, data=body)
     print(f"DEBUG: Response for server (Create user): {response.text}")
 
 
 def collectorLogin():
     session = Http.getSession()
-    login_collector_url = config['Urls']['LoginCollector']
-    username = config['User']['username']
-    password = config['User']['password']
+    base = config.get('Urls', 'BaseUrl')
+    login_collector_url = config.get('Urls', 'Login')
+    url = base + login_collector_url
+    username = config.get('Account', 'username')
+    password = config.get('Account', 'password')
     data = {
         'username': username,
         'password': password
     }
-    response = session.post(login_collector_url, data=data)
+    response = session.post(url, data=data)
     bearer = 'Bearer ' + response.text
     print(f"DEBUG: Response for server (Login): {response.text}")
     return bearer

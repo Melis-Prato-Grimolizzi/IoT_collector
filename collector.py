@@ -36,11 +36,15 @@ class Collector:
 
     def loop(self):
         timestamp = time.time()
-        while True:
-            if time.time() - timestamp >= 3600:
-                timestamp = time.time()
-                print("Aridaje!")
-                self.updateParkingHistory()
+        try:
+            while True:
+                if time.time() - timestamp >= 3600:
+                    timestamp = time.time()
+                    print("Aridaje!")
+                    self.updateParkingHistory()
+        except KeyboardInterrupt:
+            print("Collector exiting...")
+
 
 
 if __name__ == '__main__':
@@ -48,3 +52,4 @@ if __name__ == '__main__':
 
     collector = Collector(bearer)
     collector.loop()
+    exit(0)

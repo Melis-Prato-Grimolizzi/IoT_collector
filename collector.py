@@ -42,6 +42,7 @@ class Collector:
                     timestamp = time.time()
                     print("Aridaje!")
                     self.updateParkingHistory()
+                time.sleep(1)
         except KeyboardInterrupt:
             print("Collector exiting...")
 
